@@ -1,0 +1,24 @@
+.container {
+  width: 100%;
+  position: relative;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.loader {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid #e0e0e0;
+  font-size: 14px;
+  color: #666;
+}

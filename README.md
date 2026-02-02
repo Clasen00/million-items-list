@@ -1,73 +1,246 @@
-# React + TypeScript + Vite
+# Frontend - Million Items List
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Клиентская часть приложения для работы с большими списками данных с виртуализацией и drag-and-drop.
 
-Currently, two official plugins are available:
+## 🚀 Технологии
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** - UI библиотека
+- **TypeScript** - строгая типизация
+- **MobX** - управление состоянием
+- **react-window** - виртуализация списков
+- **@dnd-kit** - drag-and-drop функциональность
+- **Vite** - сборщик и dev-сервер
 
-## React Compiler
+## 📦 Установка
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Разработка
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Запуск dev-сервера:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Приложение будет доступно по адресу: `http://localhost:5173`
+
+## 🏗️ Сборка
+
+```bash
+npm run build
+```
+
+Результат сборки будет в папке `dist/`
+
+## 📁 Структура проекта
+
+```
+src/
+├── api/              # API клиент для работы с backend
+│   └── client.ts     # Методы для HTTP запросов
+├── components/       # React компоненты
+│   ├── LeftPanel.tsx      # Левая панель (все элементы)
+│   ├── RightPanel.tsx     # Правая панель (выбранные элементы)
+│   └── VirtualList.tsx    # Виртуализированный список
+├── store/            # MobX хранилища
+│   └── ItemsStore.ts # Главное хранилище состояния
+├── types/            # TypeScript типы
+│   └── index.ts      # Интерфейсы и типы
+├── App.tsx           # Главный компонент
+├── App.css           # Стили приложения
+├── main.tsx          # Точка входа
+└── index.css         # Глобальные стили
+```
+
+## 🎯 Основной функционал
+
+### Левая панель (все элементы)
+
+- ✅ Виртуализация списка с react-window
+- ✅ Фильтрация элементов по ID
+- ✅ Infinity scroll (загрузка по 20 элементов)
+- ✅ Добавление новых элементов с произвольным ID
+- ✅ Клик по элементу добавляет его в выбранные
+
+### Правая панель (выбранные элементы)
+
+- ✅ Виртуализация списка
+- ✅ Фильтрация элементов по ID
+- ✅ Drag & Drop сортировка (@dnd-kit)
+- ✅ Infinity scroll (загрузка по 20 элементов)
+- ✅ Сохранение состояния в localStorage
+- ✅ Удаление элементов из выбранных
+
+## 🔧 API клиент
+
+### Основные методы
+
+```typescript
+// Получить все элементы
+ApiClient.getItems(offset, limit, filter?)
+
+// Получить выбранные элементы
+ApiClient.getSelectedItems(offset, limit, filter?)
+
+// Добавить в выбранные
+ApiClient.addToSelected(id)
+
+// Удалить из выбранных
+ApiClient.removeFromSelected(id)
+
+// Обновить порядок
+ApiClient.updateSelectedOrder(ids[])
+
+// Создать новый элемент
+ApiClient.createItem(id)
+```
+
+## 📊 MobX Store
+
+### ItemsStore
+
+**Состояние:**
+- `allItems` - массив всех элементов
+- `selectedItems` - массив выбранных элементов
+- `*Filter` - строки фильтрации
+- `*Loading` - флаги загрузки
+- `*Total` - общее количество элементов
+
+**Методы:**
+- `initialize()` - начальная загрузка данных
+- `loadAllItems(reset)` - загрузка элементов для левой панели
+- `loadSelectedItems(reset)` - загрузка элементов для правой панели
+- `setAllItemsFilter(filter)` - установка фильтра для левой панели
+- `setSelectedItemsFilter(filter)` - установка фильтра для правой панели
+- `selectItem(id)` - добавить элемент в выбранные
+- `unselectItem(id)` - удалить элемент из выбранных
+- `reorderSelectedItems(newOrder)` - изменить порядок выбранных
+- `createItem(id)` - создать новый элемент
+- `loadMoreAllItems()` - загрузить следующую порцию (левая панель)
+- `loadMoreSelectedItems()` - загрузить следующую порцию (правая панель)
+
+## 🎨 Компоненты
+
+### VirtualList
+
+Переиспользуемый компонент виртуализированного списка на основе react-window.
+
+**Props:**
+- `items: Item[]` - элементы для отображения
+- `height: number` - высота контейнера
+- `itemHeight: number` - высота одного элемента
+- `onItemClick?: (item) => void` - обработчик клика
+- `onLoadMore?: () => void` - обработчик infinity scroll
+- `loading?: boolean` - флаг загрузки
+- `renderItem?: (item, style) => ReactNode` - кастомный рендер
+
+### LeftPanel
+
+Левая панель со всеми элементами.
+
+**Функции:**
+- Поле фильтрации
+- Кнопка добавления нового элемента
+- Модальное окно для ввода ID
+- Клик по элементу переносит его в правую панель
+
+### RightPanel
+
+Правая панель с выбранными элементами.
+
+**Функции:**
+- Поле фильтрации
+- Drag & Drop для изменения порядка
+- Кнопка удаления элемента
+- Infinity scroll
+
+## 💾 Сохранение состояния
+
+Состояние выбранных элементов и их порядок сохраняются в:
+- **localStorage** - для персистентности между сессиями
+- **Backend** - как источник истины
+
+Фильтры НЕ сохраняются и сбрасываются при обновлении страницы.
+
+## 🔌 Подключение к Backend
+
+По умолчанию frontend ожидает, что backend доступен по адресу:
+
+```
+http://localhost:3000/api
+```
+
+Для изменения адреса отредактируйте константу в `src/api/client.ts`:
+
+```typescript
+const API_BASE_URL = 'http://localhost:3000/api';
+```
+
+## ⚡ Производительность
+
+### Виртуализация
+
+- Отображаются только видимые элементы
+- Рендерится ~15-20 DOM элементов вместо миллиона
+- Плавная прокрутка даже на больших списках
+
+### Infinity Scroll
+
+- Загрузка данных порциями по 20 элементов
+- Автоматическая подгрузка при приближении к концу списка
+- Защита от дублирующих запросов
+
+### Оптимизация
+
+- MobX observer для реактивности только нужных компонентов
+- Мемоизация обработчиков событий
+- Lazy loading данных с сервера
+
+## 🎯 Особенности реализации
+
+1. **Строгая типизация** - все данные типизированы TypeScript
+2. **Модульная архитектура** - разделение на компоненты, store, API
+3. **Реактивность** - MobX для автоматического обновления UI
+4. **Производительность** - виртуализация для работы с большими данными
+5. **UX** - плавные анимации, индикаторы загрузки, обработка ошибок
+
+## 🐛 Отладка
+
+Для включения логов MobX добавьте в `main.tsx`:
+
+```typescript
+import { configure } from 'mobx';
+
+configure({
+  enforceActions: 'never',
+  computedRequiresReaction: false,
+  reactionRequiresObservable: false,
+  observableRequiresReaction: false,
+});
+```
+
+## 📝 Линтинг
+
+```bash
+npm run lint
+```
+
+## 🚀 Деплой
+
+1. Собрать production версию:
+   ```bash
+   npm run build
+   ```
+
+2. Содержимое папки `dist/` готово к деплою на любой статический хостинг (Vercel, Netlify, etc.)
+
+3. Не забудьте настроить переменную окружения для API URL в production
+
+## 🔗 Связь с Backend
+
+Убедитесь, что backend запущен и доступен перед запуском frontend.
+
+См. документацию backend: `../backend/README.md`
