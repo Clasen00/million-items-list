@@ -77,18 +77,21 @@ export const LeftPanel: React.FC = observer(() => {
           </button>
         </div>
         <div className="panel-stats">
-          Показано: {itemsStore.allItems.length} из {itemsStore.allItemsTotal}
+          Показано: {itemsStore?.allItems?.length} из {itemsStore.allItemsTotal}
         </div>
       </div>
 
       <div className="panel-content">
         <VirtualList
-          items={itemsStore.allItems}
+          items={itemsStore.allItems || []}
           height={600}
           itemHeight={50}
           renderItem={renderItem}
           onLoadMore={() => itemsStore.loadMoreAllItems()}
-          hasMore={itemsStore.allItems.length < itemsStore.allItemsTotal}
+          hasMore={
+            itemsStore?.allItems &&
+            itemsStore.allItems.length < itemsStore.allItemsTotal
+          }
           isLoading={itemsStore.allItemsLoading}
         />
       </div>

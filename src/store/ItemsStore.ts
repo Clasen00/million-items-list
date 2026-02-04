@@ -4,14 +4,14 @@ import type { Item } from "../types";
 
 export class ItemsStore {
   // Все элементы (левая панель)
-  allItems: Item[] = [];
+  allItems?: Item[] = [];
   allItemsTotal: number = 0;
   allItemsOffset: number = 0;
   allItemsFilter: string = "";
   allItemsLoading: boolean = false;
 
   // Выбранные элементы (правая панель)
-  selectedItems: Item[] = [];
+  selectedItems?: Item[] = [];
   selectedItemsTotal: number = 0;
   selectedItemsOffset: number = 0;
   selectedItemsFilter: string = "";
@@ -32,7 +32,9 @@ export class ItemsStore {
 
   // Загрузка элементов для левой панели
   async loadAllItems(reset: boolean = false) {
-    if (this.allItemsLoading) return;
+    if (this.allItemsLoading) {
+      return;
+    }
 
     runInAction(() => {
       this.allItemsLoading = true;
@@ -53,10 +55,12 @@ export class ItemsStore {
         if (reset) {
           this.allItems = response.data;
         } else {
-          this.allItems = [...this.allItems, ...response.data];
+          const data = this.allItems ? this.allItems : [];
+          this.allItems = [...data, ...response.data];
         }
-        this.allItemsTotal = response.pagination.total;
-        this.allItemsOffset = response.pagination.offset + response.data.length;
+        this.allItemsTotal = response?.pagination?.total;
+        this.allItemsOffset =
+          response?.pagination?.offset + response?.data?.length;
       });
     } catch (error) {
       console.error("Error loading all items:", error);
@@ -69,7 +73,9 @@ export class ItemsStore {
 
   // Загрузка выбранных элементов для правой панели
   async loadSelectedItems(reset: boolean = false) {
-    if (this.selectedItemsLoading) return;
+    if (this.selectedItemsLoading) {
+      return;
+    }
 
     runInAction(() => {
       this.selectedItemsLoading = true;
@@ -90,7 +96,8 @@ export class ItemsStore {
         if (reset) {
           this.selectedItems = response.data;
         } else {
-          this.selectedItems = [...this.selectedItems, ...response.data];
+          const data = this.selectedItems ? this.selectedItems : [];
+          this.selectedItems = [...data, ...response.data];
         }
         this.selectedItemsTotal = response.pagination.total;
         this.selectedItemsOffset =
@@ -124,7 +131,7 @@ export class ItemsStore {
 
       runInAction(() => {
         // Удалить из левой панели
-        this.allItems = this.allItems.filter((item) => item.id !== id);
+        this.allItems = this.allItems?.filter((item) => item.id !== id);
         this.allItemsTotal = Math.max(0, this.allItemsTotal - 1);
       });
 
@@ -143,7 +150,7 @@ export class ItemsStore {
 
       runInAction(() => {
         // Удалить из правой панели
-        this.selectedItems = this.selectedItems.filter(
+        this.selectedItems = this.selectedItems?.filter(
           (item) => item.id !== id,
         );
         this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
@@ -191,16 +198,24 @@ export class ItemsStore {
 
   // Загрузить больше элементов для левой панели (infinity scroll)
   loadMoreAllItems() {
-    if (this.allItemsLoading) return;
-    if (this.allItems.length >= this.allItemsTotal) return;
+    if (this.allItemsLoading || !this.allItems) {
+      return;
+    }
+    if (this.allItems.length >= this.allItemsTotal) {
+      return;
+    }
 
     this.loadAllItems(false);
   }
 
   // Загрузить больше элементов для правой панели (infinity scroll)
   loadMoreSelectedItems() {
-    if (this.selectedItemsLoading) return;
-    if (this.selectedItems.length >= this.selectedItemsTotal) return;
+    if (this.selectedItemsLoading || !this.selectedItems) {
+      return;
+    }
+    if (this.selectedItems?.length >= this.selectedItemsTotal) {
+      return;
+    }
 
     this.loadSelectedItems(false);
   }
@@ -209,7 +224,7 @@ export class ItemsStore {
   private saveToLocalStorage() {
     try {
       const state = {
-        selectedIds: this.selectedItems.map((item) => item.id),
+        selectedIds: this.selectedItems?.map((item) => item.id),
       };
       localStorage.setItem("itemsStore", JSON.stringify(state));
     } catch (error) {
@@ -233,7 +248,7 @@ export class ItemsStore {
 
   // Проверить, выбран ли элемент
   isItemSelected(id: number): boolean {
-    return this.selectedItems.some((item) => item.id === id);
+    return this.selectedItems?.some((item) => item.id === id) ?? false;
   }
 }
 

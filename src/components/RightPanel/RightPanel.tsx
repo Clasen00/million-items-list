@@ -88,13 +88,17 @@ export const RightPanel: React.FC = observer(() => {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (!itemsStore.selectedItems) {
+      return;
+    }
+
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
       return;
     }
 
-    const oldIndex = itemsStore.selectedItems.findIndex(
+    const oldIndex = itemsStore.selectedItems?.findIndex(
       (item) => item.id === active.id,
     );
     const newIndex = itemsStore.selectedItems.findIndex(
@@ -131,13 +135,13 @@ export const RightPanel: React.FC = observer(() => {
           />
         </div>
         <div className="panel-stats">
-          Показано: {itemsStore.selectedItems.length} из{" "}
+          Показано: {itemsStore.selectedItems?.length} из{" "}
           {itemsStore.selectedItemsTotal}
         </div>
       </div>
 
       <div className="panel-content" onScroll={handleScroll}>
-        {itemsStore.selectedItems.length === 0 &&
+        {itemsStore.selectedItems?.length === 0 &&
         !itemsStore.selectedItemsLoading ? (
           <div className="empty-state">
             <p>Нет выбранных элементов</p>
@@ -152,11 +156,11 @@ export const RightPanel: React.FC = observer(() => {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={itemsStore.selectedItems.map((item) => item.id)}
+              items={itemsStore.selectedItems?.map((item) => item.id) || []}
               strategy={verticalListSortingStrategy}
             >
               <div className="sortable-list">
-                {itemsStore.selectedItems.map((item) => (
+                {itemsStore.selectedItems?.map((item) => (
                   <SortableItem
                     key={item.id}
                     item={item}

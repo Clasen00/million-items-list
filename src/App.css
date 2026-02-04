@@ -20,11 +20,10 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7f7f7f;
   color: white;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .app-header h1 {
@@ -95,7 +94,7 @@ body {
 
 .add-button {
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: #10c12f;
   color: white;
   border: none;
   border-radius: 8px;
@@ -107,7 +106,7 @@ body {
 }
 
 .add-button:hover {
-  background: #5568d3;
+  background: #10c12f9c;
 }
 
 .panel-stats {
@@ -165,7 +164,7 @@ body {
 
 .item-action-btn {
   padding: 0.5rem 1rem;
-  background: #667eea;
+  background: #4285f4;
   color: white;
   border: none;
   border-radius: 6px;
