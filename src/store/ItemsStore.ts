@@ -126,6 +126,10 @@ export class ItemsStore {
 
   // Добавить элемент в выбранные
   async selectItem(id: number) {
+    runInAction(() => {
+      this.selectedItemsLoading = true;
+    });
+
     try {
       await ApiClient.addToSelected(id);
 
@@ -140,6 +144,10 @@ export class ItemsStore {
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error selecting item:", error);
+    } finally {
+      runInAction(() => {
+        this.selectedItemsLoading = false;
+      });
     }
   }
 
