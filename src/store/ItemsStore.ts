@@ -31,8 +31,8 @@ export class ItemsStore {
   }
 
   // Загрузка элементов для левой панели
-  async loadAllItems(reset: boolean = false, force: boolean = false) {
-    if (this.allItemsLoading && !force) {
+  async loadAllItems(reset: boolean = false) {
+    if (this.allItemsLoading) {
       return;
     }
 
@@ -72,8 +72,8 @@ export class ItemsStore {
   }
 
   // Загрузка выбранных элементов для правой панели
-  async loadSelectedItems(reset: boolean = false, force: boolean = false) {
-    if (this.selectedItemsLoading && !force) {
+  async loadSelectedItems(reset: boolean = false) {
+    if (this.selectedItemsLoading) {
       return;
     }
 
@@ -126,59 +126,96 @@ export class ItemsStore {
 
   // Добавить элемент в выбранные
   async selectItem(id: number) {
-    runInAction(() => {
-      this.selectedItemsLoading = true;
-    });
+    // Находим элемент, который добавляем
+    const item = this.allItems?.find((item) => item.id === id);
+
+    if (!item) {
+      console.error("Item не найден:", id);
+      return;
+    }
 
     try {
-      await ApiClient.addToSelected(id);
-
+      // Оптимистичное обновление UI
       runInAction(() => {
         // Удалить из левой панели
         this.allItems = this.allItems?.filter((item) => item.id !== id);
         this.allItemsTotal = Math.max(0, this.allItemsTotal - 1);
+
+        // Добавить в начало правой панели
+        this.selectedItems = [item, ...(this.selectedItems || [])];
+        this.selectedItemsTotal = this.selectedItemsTotal + 1;
       });
 
-      // Перезагрузить правую панель
-      await this.loadSelectedItems(true, true);
+      // Отправить на сервер
+      await ApiClient.addToSelected(id);
+
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error selecting item:", error);
-    } finally {
+
+      // Откат изменений при ошибке
       runInAction(() => {
-        this.selectedItemsLoading = false;
+        // Вернуть в левую панель
+        if (this.allItems) {
+          this.allItems = [...this.allItems, item];
+        } else {
+          this.allItems = [item];
+        }
+        this.allItemsTotal = this.allItemsTotal + 1;
+
+        // Убрать из правой панели
+        this.selectedItems = this.selectedItems?.filter((i) => i.id !== id);
+        this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
       });
     }
   }
 
   // Убрать элемент из выбранных
   async unselectItem(id: number) {
-    runInAction(() => {
-      this.selectedItemsLoading = true;
-    });
+    // Находим элемент, который удаляем
+    const item = this.selectedItems?.find((item) => item.id === id);
+
+    if (!item) {
+      console.error("Item не найден:", id);
+      return;
+    }
 
     try {
-      await ApiClient.removeFromSelected(id);
-
+      // Оптимистичное обновление UI
       runInAction(() => {
         // Удалить из правой панели
-        this.selectedItems = this.selectedItems?.filter(
-          (item) => item.id !== id,
-        );
+        this.selectedItems = this.selectedItems?.filter((i) => i.id !== id);
         this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
+
+        // Добавить в левую панель (в начало или конец, в зависимости от логики)
+        this.allItems = [item, ...(this.allItems || [])];
+        this.allItemsTotal = this.allItemsTotal + 1;
       });
 
-      // Перезагрузить левую панель
-      await this.loadAllItems(true, true);
+      // Отправить на сервер
+      await ApiClient.removeFromSelected(id);
+
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error unselecting item:", error);
-    } finally {
+
+      // Откат изменений при ошибке
       runInAction(() => {
-        this.selectedItemsLoading = false;
+        // Вернуть в правую панель
+        if (this.selectedItems) {
+          this.selectedItems = [...this.selectedItems, item];
+        } else {
+          this.selectedItems = [item];
+        }
+        this.selectedItemsTotal = this.selectedItemsTotal + 1;
+
+        // Убрать из левой панели
+        this.allItems = this.allItems?.filter((i) => i.id !== id);
+        this.allItemsTotal = Math.max(0, this.allItemsTotal - 1);
       });
     }
   }
+
   // Обновить порядок выбранных элементов
   async reorderSelectedItems(newOrder: Item[]) {
     const ids = newOrder.map((item) => item.id);
