@@ -126,6 +126,12 @@ export class ItemsStore {
 
   // Добавить элемент в выбранные
   async selectItem(id: number) {
+    // Проверка на дубликаты
+    if (this.isItemSelected(id)) {
+      console.warn("Item уже выбран:", id);
+      return;
+    }
+
     // Находим элемент, который добавляем
     const item = this.allItems?.find((item) => item.id === id);
 
@@ -253,10 +259,9 @@ export class ItemsStore {
     if (this.allItemsLoading || !this.allItems) {
       return;
     }
-    if (this.allItems.length >= this.allItemsTotal) {
+    if (this.allItemsOffset >= this.allItemsTotal) {
       return;
     }
-
     this.loadAllItems(false);
   }
 
@@ -265,10 +270,9 @@ export class ItemsStore {
     if (this.selectedItemsLoading || !this.selectedItems) {
       return;
     }
-    if (this.selectedItems?.length >= this.selectedItemsTotal) {
+    if (this.selectedItemsOffset >= this.selectedItemsTotal) {
       return;
     }
-
     this.loadSelectedItems(false);
   }
 
