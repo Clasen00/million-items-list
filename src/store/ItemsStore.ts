@@ -31,8 +31,8 @@ export class ItemsStore {
   }
 
   // Загрузка элементов для левой панели
-  async loadAllItems(reset: boolean = false) {
-    if (this.allItemsLoading) {
+  async loadAllItems(reset: boolean = false, force: boolean = false) {
+    if (this.allItemsLoading && !force) {
       return;
     }
 
@@ -72,8 +72,8 @@ export class ItemsStore {
   }
 
   // Загрузка выбранных элементов для правой панели
-  async loadSelectedItems(reset: boolean = false) {
-    if (this.selectedItemsLoading) {
+  async loadSelectedItems(reset: boolean = false, force: boolean = false) {
+    if (this.selectedItemsLoading && !force) {
       return;
     }
 
@@ -126,6 +126,10 @@ export class ItemsStore {
 
   // Добавить элемент в выбранные
   async selectItem(id: number) {
+    runInAction(() => {
+      this.selectedItemsLoading = true;
+    });
+
     try {
       await ApiClient.addToSelected(id);
 
@@ -136,15 +140,23 @@ export class ItemsStore {
       });
 
       // Перезагрузить правую панель
-      await this.loadSelectedItems(true);
+      await this.loadSelectedItems(true, true);
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error selecting item:", error);
+    } finally {
+      runInAction(() => {
+        this.selectedItemsLoading = false;
+      });
     }
   }
 
   // Убрать элемент из выбранных
   async unselectItem(id: number) {
+    runInAction(() => {
+      this.selectedItemsLoading = true;
+    });
+
     try {
       await ApiClient.removeFromSelected(id);
 
@@ -157,10 +169,14 @@ export class ItemsStore {
       });
 
       // Перезагрузить левую панель
-      await this.loadAllItems(true);
+      await this.loadAllItems(true, true);
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error unselecting item:", error);
+    } finally {
+      runInAction(() => {
+        this.selectedItemsLoading = false;
+      });
     }
   }
   // Обновить порядок выбранных элементов
