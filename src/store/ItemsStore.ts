@@ -126,10 +126,6 @@ export class ItemsStore {
 
   // Добавить элемент в выбранные
   async selectItem(id: number) {
-    runInAction(() => {
-      this.selectedItemsLoading = true;
-    });
-
     try {
       await ApiClient.addToSelected(id);
 
@@ -144,10 +140,6 @@ export class ItemsStore {
       this.saveToLocalStorage();
     } catch (error) {
       console.error("Error selecting item:", error);
-    } finally {
-      runInAction(() => {
-        this.selectedItemsLoading = false;
-      });
     }
   }
 
@@ -171,7 +163,6 @@ export class ItemsStore {
       console.error("Error unselecting item:", error);
     }
   }
-
   // Обновить порядок выбранных элементов
   async reorderSelectedItems(newOrder: Item[]) {
     const ids = newOrder.map((item) => item.id);
