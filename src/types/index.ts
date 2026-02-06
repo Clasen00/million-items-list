@@ -22,4 +22,5 @@ export interface PaginationMeta {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
+  selectedIds: number[];
 }
