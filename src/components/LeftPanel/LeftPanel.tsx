@@ -9,7 +9,7 @@ export const LeftPanel: React.FC = observer(() => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemId, setNewItemId] = useState("");
   const [error, setError] = useState("");
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<number | null>(null);
 
   const handleFilterChange = (value: string) => {
     setFilter(value);
