@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -66,6 +66,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ item, onRemove }) => {
 
 export const RightPanel: React.FC = observer(() => {
   const [filter, setFilter] = useState("");
+  const debounceTimerRef = useRef<number | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -80,8 +81,26 @@ export const RightPanel: React.FC = observer(() => {
 
   const handleFilterChange = (value: string) => {
     setFilter(value);
-    itemsStore.setSelectedItemsFilter(value);
+
+    // Отменяем предыдущий таймер
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Устанавливаем новый таймер с задержкой 300ms
+    debounceTimerRef.current = setTimeout(() => {
+      itemsStore.setSelectedItemsFilter(value);
+    }, 300);
   };
+
+  // Очистка таймера при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleRemoveItem = (item: Item) => {
     itemsStore.unselectItem(item.id);
@@ -138,8 +157,13 @@ export const RightPanel: React.FC = observer(() => {
           />
         </div>
         <div className="panel-stats">
-          Показано: {itemsStore.selectedItems?.length} из{" "}
-          {itemsStore.selectedItemsTotal}
+          Показано: {itemsStore.selectedItems?.length || 0} из{" "}
+          {Math.max(
+            itemsStore.selectedItems?.length || 0,
+            itemsStore.selectedItemsTotal,
+          )}
+          {itemsStore.selectedItemsFilter &&
+            ` (всего выбрано: ${itemsStore.selectedItemsAllTotal || 0})`}
         </div>
       </div>
 

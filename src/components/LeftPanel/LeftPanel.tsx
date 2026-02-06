@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { itemsStore } from "../../store/ItemsStore";
 import type { Item } from "../../types";
 import { VirtualList } from "../VirtualList/VirtualList";
@@ -9,11 +9,30 @@ export const LeftPanel: React.FC = observer(() => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItemId, setNewItemId] = useState("");
   const [error, setError] = useState("");
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleFilterChange = (value: string) => {
     setFilter(value);
-    itemsStore.setAllItemsFilter(value);
+
+    // Отменяем предыдущий таймер
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Устанавливаем новый таймер с задержкой 300ms
+    debounceTimerRef.current = setTimeout(() => {
+      itemsStore.setAllItemsFilter(value);
+    }, 300);
   };
+
+  // Очистка таймера при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleAddItem = async () => {
     setError("");

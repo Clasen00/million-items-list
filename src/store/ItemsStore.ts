@@ -12,7 +12,8 @@ export class ItemsStore {
 
   // Выбранные элементы (правая панель)
   selectedItems?: Item[] = [];
-  selectedItemsTotal: number = 0;
+  selectedItemsTotal: number = 0; // Количество отфильтрованных элементов
+  selectedItemsAllTotal: number = 0; // Общее количество всех выбранных элементов (без фильтра)
   selectedItemsOffset: number = 0;
   selectedItemsFilter: string = "";
   selectedItemsLoading: boolean = false;
@@ -100,6 +101,7 @@ export class ItemsStore {
           this.selectedItems = [...data, ...response.data];
         }
         this.selectedItemsTotal = response.pagination.total;
+        this.selectedItemsAllTotal = response.selectedIds.length;
         this.selectedItemsOffset =
           response.pagination.offset + response.data.length;
       });
