@@ -135,9 +135,6 @@ export const RightPanel: React.FC = observer(() => {
     const scrollBottom = target.scrollTop + target.clientHeight;
     const threshold = target.scrollHeight - 100;
 
-    console.log("Scroll bottom:", scrollBottom);
-    console.log("Threshold:", threshold);
-
     if (scrollBottom >= threshold && !itemsStore.selectedItemsLoading) {
       itemsStore.loadMoreSelectedItems();
     }
