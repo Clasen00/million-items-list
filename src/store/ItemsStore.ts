@@ -144,14 +144,22 @@ export class ItemsStore {
 
     try {
       // Оптимистичное обновление UI
+      // Оптимистичное обновление UI
       runInAction(() => {
         // Удалить из левой панели
         this.allItems = this.allItems?.filter((item) => item.id !== id);
         this.allItemsTotal = Math.max(0, this.allItemsTotal - 1);
 
-        // Добавить в начало правой панели
-        this.selectedItems = [item, ...(this.selectedItems || [])];
-        this.selectedItemsTotal = this.selectedItemsTotal + 1;
+        // Добавить в правую панель только если элемент соответствует текущему фильтру правой панели
+        const matchesRightFilter =
+          !this.selectedItemsFilter ||
+          item.id.toString().includes(this.selectedItemsFilter);
+        if (matchesRightFilter) {
+          this.selectedItems = [item, ...(this.selectedItems || [])];
+          this.selectedItemsTotal = this.selectedItemsTotal + 1;
+        }
+        // Всегда обновляем общий счётчик выбранных
+        this.selectedItemsAllTotal = this.selectedItemsAllTotal + 1;
       });
 
       // Отправить на сервер
@@ -172,8 +180,12 @@ export class ItemsStore {
         this.allItemsTotal = this.allItemsTotal + 1;
 
         // Убрать из правой панели
+        const wasInFilteredList = this.selectedItems?.some(i => i.id === id) ?? false;
         this.selectedItems = this.selectedItems?.filter((i) => i.id !== id);
-        this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
+        if (wasInFilteredList) {
+          this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
+        }
+        this.selectedItemsAllTotal = Math.max(0, this.selectedItemsAllTotal - 1);
       });
     }
   }
@@ -194,9 +206,15 @@ export class ItemsStore {
         // Удалить из правой панели
         this.selectedItems = this.selectedItems?.filter((i) => i.id !== id);
         this.selectedItemsTotal = Math.max(0, this.selectedItemsTotal - 1);
+        this.selectedItemsAllTotal = Math.max(0, this.selectedItemsAllTotal - 1);
 
-        // Добавить в левую панель (в начало или конец, в зависимости от логики)
-        this.allItems = [item, ...(this.allItems || [])];
+        // Добавить в левую панель только если элемент соответствует текущему фильтру левой панели
+        const matchesLeftFilter =
+          !this.allItemsFilter ||
+          item.id.toString().includes(this.allItemsFilter);
+        if (matchesLeftFilter) {
+          this.allItems = [item, ...(this.allItems || [])];
+        }
         this.allItemsTotal = this.allItemsTotal + 1;
       });
 
@@ -209,13 +227,20 @@ export class ItemsStore {
 
       // Откат изменений при ошибке
       runInAction(() => {
-        // Вернуть в правую панель
-        if (this.selectedItems) {
-          this.selectedItems = [...this.selectedItems, item];
-        } else {
-          this.selectedItems = [item];
+        // Вернуть в правую панель только если соответствует текущему фильтру
+        const matchesRightFilter =
+          !this.selectedItemsFilter ||
+          item.id.toString().includes(this.selectedItemsFilter);
+
+        if (matchesRightFilter) {
+          if (this.selectedItems) {
+            this.selectedItems = [...this.selectedItems, item];
+          } else {
+            this.selectedItems = [item];
+          }
+          this.selectedItemsTotal = this.selectedItemsTotal + 1;
         }
-        this.selectedItemsTotal = this.selectedItemsTotal + 1;
+        this.selectedItemsAllTotal = this.selectedItemsAllTotal + 1;
 
         // Убрать из левой панели
         this.allItems = this.allItems?.filter((i) => i.id !== id);
